@@ -1,0 +1,48 @@
+@startuml
+
+actor HR as "HR Advisor"
+actor DM as "Department Manager"
+
+rectangle "HR System" {
+    package "Employee Management" {
+        usecase UC5 as "Add new employee details"
+        usecase UC6 as "View employee details"
+        usecase UC7 as "Update employee details"
+        usecase UC8 as "Delete employee details"
+    }
+
+    package "Salary Reports" {
+        usecase UC1 as "Get salaries"
+        usecase UC2 as "Get salaries by department"
+        usecase UC3 as "Get salaries by my department"
+        usecase UC4 as "Get salaries by role"
+        usecase UCa as "Print salaries"
+    }
+}
+
+rectangle Database
+
+' --- Actors to Use Cases ---
+HR -right-> UC5
+HR -right-> UC6
+HR -right-> UC7
+HR -right-> UC8
+
+HR -down-> UC1
+HR -down-> UC2
+HR -down-> UC4
+DM -down-> UC3
+
+' --- Include relationship ---
+UC1 ..down..> UCa : include
+UC2 ..down..> UCa : include
+UC3 ..down..> UCa : include
+UC4 ..down..> UCa : include
+
+' --- Database relationships ---
+UC1 -down-> Database
+UC2 -down-> Database
+UC3 -down-> Database
+UC4 -down-> Database
+
+@enduml
