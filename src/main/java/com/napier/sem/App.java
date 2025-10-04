@@ -131,6 +131,49 @@ public class App
         }
     }
 
+    public void getSalariesByRole(String title)
+    {
+        try
+        {
+            // Create a Statement object to send SQL queries to the database
+            Statement stmt = con.createStatement();
+
+            // SQL query for getting employee salaries by their role (title)
+            // Only includes current employees (to_date = '9999-01-01')
+            String strSelect =
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary " +
+                            "FROM employees, salaries, titles " +
+                            "WHERE employees.emp_no = salaries.emp_no " +
+                            "AND employees.emp_no = titles.emp_no " +
+                            "AND salaries.to_date = '9999-01-01' " +
+                            "AND titles.to_date = '9999-01-01' " +
+                            "AND titles.title = '" + title + "' " +
+                            "ORDER BY employees.emp_no ASC";
+
+            // Execute the SQL statement and retrieve the result set
+            ResultSet rset = stmt.executeQuery(strSelect);
+
+            // Print a header for better readability
+            System.out.printf("%-10s %-15s %-15s %-10s%n", "Emp No", "First Name", "Last Name", "Salary");
+
+            // Loop through the result set and print each employee record
+            while (rset.next())
+            {
+                System.out.printf("%-10d %-15s %-15s %-10d%n",
+                        rset.getInt("emp_no"),
+                        rset.getString("first_name"),
+                        rset.getString("last_name"),
+                        rset.getInt("salary"));
+            }
+        }
+        catch (Exception e)
+        {
+            // Catch and print any exceptions (e.g., SQL or connection issues)
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get salaries by role");
+        }
+    }
+
 
     public static void main(String[] args)
     {
@@ -144,6 +187,10 @@ public class App
 
         // Display
         a.displayEmployee(emp);
+
+        // Print salaries for employees with the title "Engineer"
+        System.out.println("\n===== Salary Report for Role: Engineer =====");
+        a.getSalariesByRole("Engineer");
 
         // Disconnect
         a.disconnect();
