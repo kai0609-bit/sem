@@ -1,6 +1,7 @@
 package com.napier.sem;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class App
 {
@@ -174,23 +175,68 @@ public class App
         }
     }
 
+    /**
+     * Gets all the current employees and salaries.
+     * @return A list of all employees and salaries, or null if there is an error.
+     */
+    public ArrayList<Employee> getAllSalaries()
+    {
+        try {
+            // Create an SQL statement
+            Statement stmt = con.createStatement();
+            // Create string for SQL statement
+            String strSelect =
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary "
+                            + "FROM employees, salaries "
+                            + "WHERE employees.emp_no = salaries.emp_no AND salaries.to_date = '9999-01-01' "
+                            + "ORDER BY employees.emp_no ASC";
+            // Execute SQL statement
+            ResultSet rset = stmt.executeQuery(strSelect);
+            // Extract employee information
+            ArrayList<Employee> employees = new ArrayList<Employee>();
+            while (rset.next()) {
+                Employee emp = new Employee();
+                emp.emp_no = rset.getInt("employees.emp_no");
+                emp.first_name = rset.getString("employees.first_name");
+                emp.last_name = rset.getString("employees.last_name");
+                emp.salary = rset.getInt("salaries.salary");
+                employees.add(emp);
+            }
+            return employees;
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get salary details");
+            return null;
+        }
+    }
+
+
 
     public static void main(String[] args)
     {
+        //Create new Application
         App a = new App();
 
         // Connect
         a.connect();
 
+        // --- Lab 04: Salary Report (current sprint) ---
+        // Extract employee salary information
+        ArrayList<Employee> employees = a.getAllSalaries();
+        // Tes the size of the returned data - should be 240124
+        System.out.println(employees.size());
+        // a.printSalaries(employees);
+
+        // --- The following code belongs to other features (kept for future integration) ---
         // Get employee
-        Employee emp = a.getEmployee(255530);
-
+        // Employee emp = a.getEmployee(255530);
         // Display
-        a.displayEmployee(emp);
-
+        // a.displayEmployee(emp);
         // Print salaries for employees with the title "Engineer"
-        System.out.println("\n===== Salary Report for Role: Engineer =====");
-        a.getSalariesByRole("Engineer");
+        // System.out.println("\n===== Salary Report for Role: Engineer =====");
+        // a.getSalariesByRole("Engineer");
 
         // Disconnect
         a.disconnect();
