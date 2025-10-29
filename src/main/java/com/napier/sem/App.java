@@ -3,8 +3,7 @@ package com.napier.sem;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class App
-{
+public class App {
     /**
      * Connection to MySQL database.
      */
@@ -13,39 +12,32 @@ public class App
     /**
      * Connect to the MySQL database.
      */
-    public void connect()
-    {
-        try
-        {
+    public void connect() {
+        try {
             // Load Database driver
             Class.forName("com.mysql.cj.jdbc.Driver");
-        }
-        catch (ClassNotFoundException e)
-        {
+        } catch (ClassNotFoundException e) {
             System.out.println("Could not load SQL driver");
             System.exit(-1);
         }
 
         int retries = 10;
-        for (int i = 0; i < retries; ++i)
-        {
+        for (int i = 0; i < retries; ++i) {
             System.out.println("Connecting to database...");
-            try
-            {
+            try {
                 // Wait a bit for db to start
                 Thread.sleep(30000);
                 // Connect to database
-                con = DriverManager.getConnection("jdbc:mysql://db:3306/employees?allowPublicKeyRetrieval=true&useSSL=false", "root", "example");
+                con = DriverManager.getConnection(
+                        "jdbc:mysql://db:3306/employees?allowPublicKeyRetrieval=true&useSSL=false",
+                        "root",
+                        "example");
                 System.out.println("Successfully connected");
                 break;
-            }
-            catch (SQLException sqle)
-            {
-                System.out.println("Failed to connect to database attempt " + i );
+            } catch (SQLException sqle) {
+                System.out.println("Failed to connect to database attempt " + i);
                 System.out.println(sqle.getMessage());
-            }
-            catch (InterruptedException ie)
-            {
+            } catch (InterruptedException ie) {
                 System.out.println("Thread interrupted? Should not happen.");
             }
         }
@@ -54,33 +46,27 @@ public class App
     /**
      * Disconnect from the MySQL database.
      */
-    public void disconnect()
-    {
-        if (con != null)
-        {
-            try
-            {
-                // Close connection
+    public void disconnect() {
+        if (con != null) {
+            try {
                 con.close();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 System.out.println("Error closing connection to database");
             }
         }
     }
 
-    public Employee getEmployee(int ID)
-    {
-        try
-        {
-            // Create an SQL statement
+    /**
+     * Get an employee by employee number.
+     * Includes department and manager information.
+     */
+    public Employee getEmployee(int ID) {
+        try {
             Statement stmt = con.createStatement();
-            // SQL query with JOINs to get current job title, salary, department, and manager
             String strSelect =
                     "SELECT e.emp_no, e.first_name, e.last_name, " +
                             "t.title, s.salary, d.dept_name, " +
-                            "CONCAT(m.first_name, ' ', m.last_name) AS manager " +
+                            "m.emp_no AS mgr_no, m.first_name AS mgr_first, m.last_name AS mgr_last " +
                             "FROM employees e " +
                             "JOIN titles t ON e.emp_no = t.emp_no AND t.to_date = '9999-01-01' " +
                             "JOIN salaries s ON e.emp_no = s.emp_no AND s.to_date = '9999-01-01' " +
@@ -89,111 +75,169 @@ public class App
                             "JOIN dept_manager dm ON d.dept_no = dm.dept_no AND dm.to_date = '9999-01-01' " +
                             "JOIN employees m ON dm.emp_no = m.emp_no " +
                             "WHERE e.emp_no = " + ID;
-            // Execute SQL statement
+
             ResultSet rset = stmt.executeQuery(strSelect);
-            // Return new employee if valid.
-            // Check one is returned
-            if (rset.next())
-            {
+
+            if (rset.next()) {
                 Employee emp = new Employee();
                 emp.emp_no = rset.getInt("emp_no");
                 emp.first_name = rset.getString("first_name");
                 emp.last_name = rset.getString("last_name");
                 emp.title = rset.getString("title");
                 emp.salary = rset.getInt("salary");
-                emp.dept_name = rset.getString("dept_name");
-                emp.manager = rset.getString("manager");
-                return emp;
-            }
 
-            else
+                // Department object
+                Department dept = new Department();
+                dept.dept_name = rset.getString("dept_name");
+
+                // Manager object
+                Employee manager = new Employee();
+                manager.emp_no = rset.getInt("mgr_no");
+                manager.first_name = rset.getString("mgr_first");
+                manager.last_name = rset.getString("mgr_last");
+
+                dept.manager = manager;
+                emp.dept = dept;
+                emp.manager = manager;
+
+                return emp;
+            } else
                 return null;
-        }
-        catch (Exception e)
-        {
+
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println("Failed to get employee details");
             return null;
         }
     }
 
-    public void displayEmployee(Employee emp)
-    {
-        if (emp != null)
-        {
+    /**
+     * Get an employee by first name and last name (Exercise 3).
+     */
+    public Employee getEmployeeByName(String firstName, String lastName) {
+        try {
+            Statement stmt = con.createStatement();
+            String strSelect =
+                    "SELECT e.emp_no, e.first_name, e.last_name, " +
+                            "t.title, s.salary, d.dept_name, " +
+                            "m.emp_no AS mgr_no, m.first_name AS mgr_first, m.last_name AS mgr_last " +
+                            "FROM employees e " +
+                            "JOIN titles t ON e.emp_no = t.emp_no AND t.to_date = '9999-01-01' " +
+                            "JOIN salaries s ON e.emp_no = s.emp_no AND s.to_date = '9999-01-01' " +
+                            "JOIN dept_emp de ON e.emp_no = de.emp_no AND de.to_date = '9999-01-01' " +
+                            "JOIN departments d ON de.dept_no = d.dept_no " +
+                            "JOIN dept_manager dm ON d.dept_no = dm.dept_no AND dm.to_date = '9999-01-01' " +
+                            "JOIN employees m ON dm.emp_no = m.emp_no " +
+                            "WHERE e.first_name = '" + firstName + "' AND e.last_name = '" + lastName + "'";
+
+            ResultSet rset = stmt.executeQuery(strSelect);
+
+            if (rset.next()) {
+                Employee emp = new Employee();
+                emp.emp_no = rset.getInt("emp_no");
+                emp.first_name = rset.getString("first_name");
+                emp.last_name = rset.getString("last_name");
+                emp.title = rset.getString("title");
+                emp.salary = rset.getInt("salary");
+
+                Department dept = new Department();
+                dept.dept_name = rset.getString("dept_name");
+
+                Employee manager = new Employee();
+                manager.emp_no = rset.getInt("mgr_no");
+                manager.first_name = rset.getString("mgr_first");
+                manager.last_name = rset.getString("mgr_last");
+
+                dept.manager = manager;
+                emp.dept = dept;
+                emp.manager = manager;
+
+                return emp;
+            } else {
+                System.out.println("Employee not found: " + firstName + " " + lastName);
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get employee by name");
+            return null;
+        }
+    }
+
+    /**
+     * Display an employee's information.
+     */
+    public void displayEmployee(Employee emp) {
+        if (emp != null) {
             System.out.println(
                     emp.emp_no + " "
                             + emp.first_name + " "
                             + emp.last_name + "\n"
                             + emp.title + "\n"
-                            + "Salary:" + emp.salary + "\n"
-                            + emp.dept_name + "\n"
-                            + "Manager: " + emp.manager + "\n");
-        }
-    }
-
-    public void getSalariesByRole(String title)
-    {
-        try
-        {
-            // Create a Statement object to send SQL queries to the database
-            Statement stmt = con.createStatement();
-
-            // SQL query for getting employee salaries by their role (title)
-            // Only includes current employees (to_date = '9999-01-01')
-            String strSelect =
-                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary " +
-                            "FROM employees, salaries, titles " +
-                            "WHERE employees.emp_no = salaries.emp_no " +
-                            "AND employees.emp_no = titles.emp_no " +
-                            "AND salaries.to_date = '9999-01-01' " +
-                            "AND titles.to_date = '9999-01-01' " +
-                            "AND titles.title = '" + title + "' " +
-                            "ORDER BY employees.emp_no ASC";
-
-            // Execute the SQL statement and retrieve the result set
-            ResultSet rset = stmt.executeQuery(strSelect);
-
-            // Print a header for better readability
-            System.out.printf("%-10s %-15s %-15s %-10s%n", "Emp No", "First Name", "Last Name", "Salary");
-
-            // Loop through the result set and print each employee record
-            while (rset.next())
-            {
-                System.out.printf("%-10d %-15s %-15s %-10d%n",
-                        rset.getInt("emp_no"),
-                        rset.getString("first_name"),
-                        rset.getString("last_name"),
-                        rset.getInt("salary"));
-            }
-        }
-        catch (Exception e)
-        {
-            // Catch and print any exceptions (e.g., SQL or connection issues)
-            System.out.println(e.getMessage());
-            System.out.println("Failed to get salaries by role");
+                            + "Salary: " + emp.salary + "\n"
+                            + "Department: " + emp.dept.dept_name + "\n"
+                            + "Manager: " + emp.manager.first_name + " " + emp.manager.last_name + "\n");
         }
     }
 
     /**
-     * Gets all the current employees and salaries.
-     * @return A list of all employees and salaries, or null if there is an error.
+     * Get a department by name, including its manager (Exercise 1).
      */
-    public ArrayList<Employee> getAllSalaries()
-    {
+    public Department getDepartment(String dept_name) {
         try {
-            // Create an SQL statement
             Statement stmt = con.createStatement();
-            // Create string for SQL statement
             String strSelect =
-                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary "
-                            + "FROM employees, salaries "
-                            + "WHERE employees.emp_no = salaries.emp_no AND salaries.to_date = '9999-01-01' "
-                            + "ORDER BY employees.emp_no ASC";
-            // Execute SQL statement
+                    "SELECT d.dept_no, d.dept_name, e.emp_no, e.first_name, e.last_name " +
+                            "FROM departments d " +
+                            "JOIN dept_manager dm ON d.dept_no = dm.dept_no " +
+                            "JOIN employees e ON dm.emp_no = e.emp_no " +
+                            "WHERE d.dept_name = '" + dept_name + "' " +
+                            "AND dm.to_date = '9999-01-01'";
+
             ResultSet rset = stmt.executeQuery(strSelect);
-            // Extract employee information
-            ArrayList<Employee> employees = new ArrayList<Employee>();
+
+            if (rset.next()) {
+                Department dept = new Department();
+                dept.dept_no = rset.getString("dept_no");
+                dept.dept_name = rset.getString("dept_name");
+
+                Employee manager = new Employee();
+                manager.emp_no = rset.getInt("emp_no");
+                manager.first_name = rset.getString("first_name");
+                manager.last_name = rset.getString("last_name");
+
+                dept.manager = manager;
+                return dept;
+            } else {
+                System.out.println("Department not found: " + dept_name);
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println("Failed to get department details");
+            return null;
+        }
+    }
+
+    /**
+     * Get all current employees and their salaries within a specific department.
+     */
+    public ArrayList<Employee> getSalariesByDepartment(Department dept) {
+        try {
+            Statement stmt = con.createStatement();
+            String strSelect =
+                    "SELECT employees.emp_no, employees.first_name, employees.last_name, salaries.salary " +
+                            "FROM employees, salaries, dept_emp, departments " +
+                            "WHERE employees.emp_no = salaries.emp_no " +
+                            "AND employees.emp_no = dept_emp.emp_no " +
+                            "AND dept_emp.dept_no = departments.dept_no " +
+                            "AND salaries.to_date = '9999-01-01' " +
+                            "AND departments.dept_no = '" + dept.dept_no + "' " +
+                            "ORDER BY employees.emp_no ASC";
+
+            ResultSet rset = stmt.executeQuery(strSelect);
+            ArrayList<Employee> employees = new ArrayList<>();
+
             while (rset.next()) {
                 Employee emp = new Employee();
                 emp.emp_no = rset.getInt("employees.emp_no");
@@ -202,27 +246,21 @@ public class App
                 emp.salary = rset.getInt("salaries.salary");
                 employees.add(emp);
             }
+
             return employees;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
-            System.out.println("Failed to get salary details");
+            System.out.println("Failed to get salaries by department");
             return null;
         }
     }
 
     /**
-     * Prints a list of employees.
-     * @param employees The list of employees to print.
+     * Print a list of employees.
      */
-    public void printSalaries(ArrayList<Employee> employees)
-    {
-        // Print header
+    public void printSalaries(ArrayList<Employee> employees) {
         System.out.println(String.format("%-10s %-15s %-20s %-8s", "Emp No", "First Name", "Last Name", "Salary"));
-        // Loop over all employees in the list
-        for (Employee emp : employees)
-        {
+        for (Employee emp : employees) {
             String emp_string =
                     String.format("%-10s %-15s %-20s %-8s",
                             emp.emp_no, emp.first_name, emp.last_name, emp.salary);
@@ -230,33 +268,27 @@ public class App
         }
     }
 
-    public static void main(String[] args)
-    {
-        //Create new Application
+    public static void main(String[] args) {
         App a = new App();
-
-        // Connect
         a.connect();
 
-        // --- Lab 04: Salary Report (current sprint) ---
-        // Extract employee salary information
-        ArrayList<Employee> employees = a.getAllSalaries();
-        // Tes the size of the returned data - should be 240124
-        System.out.println(employees.size());
-        // Print all employee salaries
-        a.printSalaries(employees);
+        // Test 1: Department with Manager (Exercise 1)
+        Department dept = a.getDepartment("Sales");
+        System.out.println("Department: " + dept.dept_name +
+                ", Manager: " + dept.manager.first_name + " " + dept.manager.last_name);
 
-        // --- The following code belongs to other features (kept for future integration) ---
-        // Get employee
-        // Employee emp = a.getEmployee(255530);
-        // Display
-        // a.displayEmployee(emp);
-        // Print salaries for employees with the title "Engineer"
-        // System.out.println("\n===== Salary Report for Role: Engineer =====");
-        // a.getSalariesByRole("Engineer");
+        // Test 2: Salaries by Department
+        ArrayList<Employee> deptEmployees = a.getSalariesByDepartment(dept);
+        a.printSalaries(deptEmployees);
 
-        // Disconnect
+        // Test 3: Get employee by ID (Exercise 2)
+        Employee emp = a.getEmployee(255530);
+        a.displayEmployee(emp);
+
+        // Test 4: Get employee by name (Exercise 3)
+        Employee empByName = a.getEmployeeByName("Georgi", "Facello");
+        a.displayEmployee(empByName);
+
         a.disconnect();
     }
-
 }
