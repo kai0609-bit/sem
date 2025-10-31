@@ -1,4 +1,4 @@
-package com.napier.sem;
+package com.napier.devops.sem;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -168,17 +168,32 @@ public class App {
      * Display an employee's information.
      */
     public void displayEmployee(Employee emp) {
-        if (emp != null) {
-            System.out.println(
-                    emp.emp_no + " "
-                            + emp.first_name + " "
-                            + emp.last_name + "\n"
-                            + emp.title + "\n"
-                            + "Salary: " + emp.salary + "\n"
-                            + "Department: " + emp.dept.dept_name + "\n"
-                            + "Manager: " + emp.manager.first_name + " " + emp.manager.last_name + "\n");
+        if (emp == null) {
+            System.out.println("No employee data.");
+            return;
         }
+
+        System.out.println("Emp No     First Name      Last Name      Title");
+        System.out.println(String.format("%-10s %-15s %-15s %-20s",
+                emp.emp_no, emp.first_name, emp.last_name,
+                emp.title != null ? emp.title : "No Title"));
+
+        System.out.println("Salary: " + emp.salary);
+
+        if (emp.dept != null && emp.dept.dept_name != null)
+            System.out.println("Department: " + emp.dept.dept_name);
+        else
+            System.out.println("Department: No Department");
+
+        if (emp.manager != null)
+            System.out.println("Manager: " + emp.manager.first_name + " " + emp.manager.last_name);
+        else
+            System.out.println("Manager: No Manager");
+
+        System.out.println("---------------------------------------------");
     }
+
+
 
     /**
      * Get a department by name, including its manager (Exercise 1).
@@ -258,9 +273,21 @@ public class App {
     /**
      * Print a list of employees.
      */
-    public void printSalaries(ArrayList<Employee> employees) {
+    public void printSalaries(ArrayList<Employee> employees)
+    {
+        // Check employees is not null
+        if (employees == null)
+        {
+            System.out.println("No employees");
+            return;
+        }
+        // Print header
         System.out.println(String.format("%-10s %-15s %-20s %-8s", "Emp No", "First Name", "Last Name", "Salary"));
-        for (Employee emp : employees) {
+        // Loop over all employees in the list
+        for (Employee emp : employees)
+        {
+            if (emp == null)
+                continue;
             String emp_string =
                     String.format("%-10s %-15s %-20s %-8s",
                             emp.emp_no, emp.first_name, emp.last_name, emp.salary);
