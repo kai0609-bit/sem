@@ -1,4 +1,4 @@
-package com.napier.devops.sem;
+package com.napier.devops;
 
 import java.sql.*;
 import java.util.ArrayList;

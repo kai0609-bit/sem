@@ -1,12 +1,7 @@
 package com.napier.devops;
 
-import com.napier.devops.sem.App;
-import com.napier.devops.sem.Employee;
-import com.napier.devops.sem.Department;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
