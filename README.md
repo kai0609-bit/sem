@@ -1,4 +1,7 @@
-# MASTER
-[![LICENSE](https://img.shields.io/github/license/<github-username>/devops.svg?style=flat-square)](https://github.com/<kai0609-bit>/devops/blob/master/LICENSE)
-# DevOps
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/kai0609-bit/sem/A%20workflow%20for%20my%20Hello%20World%20App?branch=develop)
+# seMethods
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/kai0609-bit/sem/ci.yml?branch=develop&label=Build)](https://github.com/kai0609-bit/sem/actions)
+[![codecov](https://codecov.io/gh/kai0609-bit/sem/graph/badge.svg?token=C2A59JIBZE)](https://codecov.io/gh/kai0609-bit/sem)
+[![License](https://img.shields.io/github/license/kai0609-bit/sem?color=blue)](https://github.com/kai0609-bit/sem/blob/master/LICENSE)
+[![Issues](https://img.shields.io/github/issues/kai0609-bit/sem)](https://github.com/kai0609-bit/sem/issues)
+[![Last Commit](https://img.shields.io/github/last-commit/kai0609-bit/sem?color=brightgreen)](https://github.com/kai0609-bit/sem/commits/develop)
