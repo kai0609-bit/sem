@@ -297,23 +297,49 @@ public class App {
     /**
      * Add a new employee to the database
      */
-    public void addEmployee(Employee emp)
-    {
-        try
-        {
+    public void addEmployee(Employee emp) {
+        try {
             Statement stmt = con.createStatement();
-            String strUpdate =
-                    "INSERT INTO employees (emp_no, first_name, last_name, birth_date, gender, hire_date) " +
-                            "VALUES (" + emp.emp_no + ", '" + emp.first_name + "', '" + emp.last_name + "', " +
-                            "'9999-01-01', 'M', '9999-01-01')";
-            stmt.execute(strUpdate);
-        }
-        catch (Exception e)
-        {
+
+            // employees
+            String sqlEmp = String.format(
+                    "INSERT INTO employees (emp_no, birth_date, first_name, last_name, gender, hire_date) " +
+                            "VALUES (%d, '%s', '%s', '%s', '%s', CURDATE());",
+                    emp.emp_no,
+                    "1990-01-01",
+                    emp.first_name,
+                    emp.last_name,
+                    "M"
+            );
+            stmt.executeUpdate(sqlEmp);
+
+            // titles
+            String sqlTitle = String.format(
+                    "INSERT INTO titles (emp_no, title, from_date, to_date) " +
+                            "VALUES (%d, '%s', CURDATE(), '9999-01-01');",
+                    emp.emp_no, emp.title);
+            stmt.executeUpdate(sqlTitle);
+
+            // salaries
+            String sqlSalary = String.format(
+                    "INSERT INTO salaries (emp_no, salary, from_date, to_date) " +
+                            "VALUES (%d, %d, CURDATE(), '9999-01-01');",
+                    emp.emp_no, emp.salary);
+            stmt.executeUpdate(sqlSalary);
+
+            // dept_emp（仮で開発部 d005 に所属させる）
+            String sqlDeptEmp = String.format(
+                    "INSERT INTO dept_emp (emp_no, dept_no, from_date, to_date) " +
+                            "VALUES (%d, 'd005', CURDATE(), '9999-01-01');",
+                    emp.emp_no);
+            stmt.executeUpdate(sqlDeptEmp);
+
+        } catch (SQLException e) {
             System.out.println(e.getMessage());
             System.out.println("Failed to add employee");
         }
     }
+
 
     public static void main(String[] args) {
         // Create new Application and connect to database
